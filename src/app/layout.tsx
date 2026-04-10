@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Kalkulator Masa Kerja PNS",
   description: "Aplikasi sederhana untuk menghitung masa kerja golongan PNS",
+  icons: {
+    icon: "/logokabsor.ico",
+    shortcut: "/logokabsor.ico",
+  },
 };
 
 export default function RootLayout({
