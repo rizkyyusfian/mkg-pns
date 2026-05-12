@@ -3,7 +3,7 @@ import {
   CalculationResult,
   DateInput,
   DateValidationErrors,
-  GolonganAwal,
+  Golongan,
 } from "./types";
 
 function parseDate(dateInput: DateInput): Date {
@@ -32,16 +32,39 @@ function toDuration(totalMonths: number): CalculationDuration {
   };
 }
 
-function getPenguranganGolongan(golonganAwal: GolonganAwal): number {
-  if (golonganAwal === "I") return 6 * 12;
-  if (golonganAwal === "II") return 5 * 12;
+function getGolonganRank(golongan: Golongan): number {
+  const ranks: Record<Golongan, number> = {
+    I: 1,
+    II: 2,
+    III: 3,
+    IV: 4,
+  };
+
+  return ranks[golongan];
+}
+
+function getPenguranganGolongan(
+  golonganAwal: Golongan,
+  pangkatSaatIni: Golongan
+): number {
+  if (golonganAwal === "I" && pangkatSaatIni === "II") return 6 * 12;
+  if (golonganAwal === "II" && pangkatSaatIni === "III") return 5 * 12;
   return 0;
 }
 
-function getPenguranganLabel(golonganAwal: GolonganAwal): string {
-  if (golonganAwal === "I") return "Pengurangan Golongan I (-6 tahun)";
-  if (golonganAwal === "II") return "Pengurangan Golongan II (-5 tahun)";
-  return `Pengurangan Golongan ${golonganAwal} (0 tahun)`;
+function getPenguranganLabel(
+  golonganAwal: Golongan,
+  pangkatSaatIni: Golongan
+): string {
+  if (golonganAwal === "I" && pangkatSaatIni === "II") {
+    return "Pengurangan kenaikan Golongan I ke II (-6 tahun)";
+  }
+
+  if (golonganAwal === "II" && pangkatSaatIni === "III") {
+    return "Pengurangan kenaikan Golongan II ke III (-5 tahun)";
+  }
+
+  return `Pengurangan kenaikan Golongan ${golonganAwal} ke ${pangkatSaatIni} (0 tahun)`;
 }
 
 function getBawaanMonths(masaKerjaBawaan?: DateInput): number {
@@ -56,7 +79,8 @@ function buildResult(params: {
   masaKerjaDasarMonths: number;
   masaKerjaLanjutanMonths: number;
   masaKerjaBawaanMonths: number;
-  golonganAwal: GolonganAwal;
+  golonganAwal: Golongan;
+  pangkatSaatIni: Golongan;
 }): CalculationResult {
   const {
     mode,
@@ -64,11 +88,12 @@ function buildResult(params: {
     masaKerjaLanjutanMonths,
     masaKerjaBawaanMonths,
     golonganAwal,
+    pangkatSaatIni,
   } = params;
 
   const subtotalMonths =
     masaKerjaDasarMonths + masaKerjaLanjutanMonths + masaKerjaBawaanMonths;
-  const penguranganMonths = getPenguranganGolongan(golonganAwal);
+  const penguranganMonths = getPenguranganGolongan(golonganAwal, pangkatSaatIni);
   const totalMonths = Math.max(0, subtotalMonths - penguranganMonths);
 
   return {
@@ -79,14 +104,15 @@ function buildResult(params: {
     subtotalSebelumPengurangan: toDuration(subtotalMonths),
     penguranganGolongan: toDuration(penguranganMonths),
     totalMasaKerja: toDuration(totalMonths),
-    penguranganLabel: getPenguranganLabel(golonganAwal),
+    penguranganLabel: getPenguranganLabel(golonganAwal, pangkatSaatIni),
   };
 }
 
 export function calculateBasicWorkPeriod(
   tmtCpns: DateInput,
   tmtSkPangkat: DateInput,
-  golonganAwal: GolonganAwal,
+  golonganAwal: Golongan,
+  pangkatSaatIni: Golongan,
   masaKerjaBawaan?: DateInput
 ): CalculationResult {
   const cpnsDate = parseDate(tmtCpns);
@@ -101,6 +127,7 @@ export function calculateBasicWorkPeriod(
     masaKerjaLanjutanMonths: 0,
     masaKerjaBawaanMonths,
     golonganAwal,
+    pangkatSaatIni,
   });
 }
 
@@ -108,7 +135,8 @@ export function calculateExtendedWorkPeriod(
   tmtCpns: DateInput,
   tmtSkPangkat: DateInput,
   tmtBerikutnya: DateInput,
-  golonganAwal: GolonganAwal,
+  golonganAwal: Golongan,
+  pangkatSaatIni: Golongan,
   masaKerjaBawaan?: DateInput
 ): CalculationResult {
   const cpnsDate = parseDate(tmtCpns);
@@ -128,7 +156,19 @@ export function calculateExtendedWorkPeriod(
     masaKerjaLanjutanMonths,
     masaKerjaBawaanMonths,
     golonganAwal,
+    pangkatSaatIni,
   });
+}
+
+export function validateGolonganTransition(
+  golonganAwal: Golongan,
+  pangkatSaatIni: Golongan
+): string | undefined {
+  if (getGolonganRank(pangkatSaatIni) < getGolonganRank(golonganAwal)) {
+    return "Golongan saat ini tidak boleh lebih rendah dari golongan awal";
+  }
+
+  return undefined;
 }
 
 function validateDateField(

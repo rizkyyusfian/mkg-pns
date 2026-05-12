@@ -1,4 +1,5 @@
-export type GolonganAwal = "I" | "II" | "III" | "IV";
+export type Golongan = "I" | "II" | "III" | "IV";
+export type GolonganAwal = Golongan;
 
 export type CalculatorMode = "basic" | "extended";
 
@@ -32,5 +33,6 @@ export interface DateValidationErrors {
 
 export interface FormErrors extends DateValidationErrors {
   golonganAwal?: string;
+  pangkatSaatIni?: string;
   masaKerjaBawaan?: string;
 }

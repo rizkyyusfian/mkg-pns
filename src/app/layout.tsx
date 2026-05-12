@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,7 +45,29 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full">
+        <div className="min-h-screen bg-background flex flex-col">
+          <ThemeToggle />
+          <main className="container mx-auto px-4 py-6 sm:py-8 flex-1">
+            {children}
+          </main>
+          <footer className="border-t border-border py-4 text-center text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+              <a
+                href="https://rizkyyusfian.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                © MRYY 2026
+              </a>
+              <Link href="/changelog" className="text-primary hover:underline">
+                Changelog
+              </Link>
+            </div>
+          </footer>
+        </div>
+      </body>
     </html>
   );
 }

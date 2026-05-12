@@ -10,6 +10,7 @@ import {
   calculateExtendedWorkPeriod,
   validateBasicDates,
   validateExtendedDates,
+  validateGolonganTransition,
   validateMasaKerjaBawaan,
 } from '@/lib/calculations';
 import {
@@ -18,7 +19,7 @@ import {
   CalculatorMode,
   DateInput as DateInputType,
   FormErrors,
-  GolonganAwal,
+  Golongan,
 } from '@/lib/types';
 
 const emptyYearMonth: DateInputType = { year: '', month: '' };
@@ -36,7 +37,8 @@ export function Calculator() {
   const [tmtCpns, setTmtCpns] = useState<DateInputType>(emptyYearMonth);
   const [tmtSkPangkat, setTmtSkPangkat] = useState<DateInputType>(emptyYearMonth);
   const [tmtBerikutnya, setTmtBerikutnya] = useState<DateInputType>(emptyYearMonth);
-  const [golonganAwal, setGolonganAwal] = useState<GolonganAwal | ''>('');
+  const [golonganAwal, setGolonganAwal] = useState<Golongan | ''>('');
+  const [pangkatSaatIni, setPangkatSaatIni] = useState<Golongan | ''>('');
   const [hasMasaKerjaBawaan, setHasMasaKerjaBawaan] = useState(false);
   const [masaKerjaBawaan, setMasaKerjaBawaan] = useState<DateInputType>(emptyYearMonth);
   const [result, setResult] = useState<CalculationResult | null>(null);
@@ -47,6 +49,17 @@ export function Calculator() {
 
     if (!golonganAwal) {
       newErrors.golonganAwal = 'Golongan awal harus dipilih';
+    }
+
+    if (!pangkatSaatIni) {
+      newErrors.pangkatSaatIni = 'Golongan saat ini harus dipilih';
+    }
+
+    if (golonganAwal && pangkatSaatIni) {
+      const transitionError = validateGolonganTransition(golonganAwal, pangkatSaatIni);
+      if (transitionError) {
+        newErrors.pangkatSaatIni = transitionError;
+      }
     }
 
     const dateErrors =
@@ -69,7 +82,7 @@ export function Calculator() {
     const formErrors = validateForm();
     setErrors(formErrors);
 
-    if (!hasErrors(formErrors) && golonganAwal) {
+    if (!hasErrors(formErrors) && golonganAwal && pangkatSaatIni) {
       const bawaan = hasMasaKerjaBawaan ? masaKerjaBawaan : undefined;
       const calculationResult =
         activeTab === 'extended'
@@ -78,9 +91,16 @@ export function Calculator() {
               tmtSkPangkat,
               tmtBerikutnya,
               golonganAwal,
+              pangkatSaatIni,
               bawaan
             )
-          : calculateBasicWorkPeriod(tmtCpns, tmtSkPangkat, golonganAwal, bawaan);
+          : calculateBasicWorkPeriod(
+              tmtCpns,
+              tmtSkPangkat,
+              golonganAwal,
+              pangkatSaatIni,
+              bawaan
+            );
 
       setResult(calculationResult);
     } else {
@@ -93,6 +113,7 @@ export function Calculator() {
     setTmtSkPangkat(emptyYearMonth);
     setTmtBerikutnya(emptyYearMonth);
     setGolonganAwal('');
+    setPangkatSaatIni('');
     setHasMasaKerjaBawaan(false);
     setMasaKerjaBawaan(emptyYearMonth);
     setResult(null);
@@ -163,9 +184,22 @@ export function Calculator() {
 
           {/* Golongan Awal */}
           <GolonganSelect
+            label="Golongan Awal"
+            placeholder="Pilih Golongan Awal"
+            ariaLabel="Pilih golongan awal PNS"
             value={golonganAwal}
             onChange={setGolonganAwal}
             error={errors.golonganAwal}
+          />
+
+          {/* Golongan Saat Ini */}
+          <GolonganSelect
+            label="Golongan Saat Ini"
+            placeholder="Pilih Golongan Saat Ini"
+            ariaLabel="Pilih golongan saat ini PNS"
+            value={pangkatSaatIni}
+            onChange={setPangkatSaatIni}
+            error={errors.pangkatSaatIni}
           />
 
           {/* Masa Kerja Bawaan */}
@@ -254,8 +288,11 @@ export function Calculator() {
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-border">
                 <span className="text-sm font-medium mb-1 sm:mb-0">{result.penguranganLabel}:</span>
-                <span className="font-semibold text-red-500">
-                  -{formatDuration(result.penguranganGolongan)}
+                <span className={`font-semibold ${
+                  result.penguranganGolongan.totalBulan > 0 ? 'text-red-500' : 'text-muted-foreground'
+                }`}>
+                  {result.penguranganGolongan.totalBulan > 0 ? '-' : ''}
+                  {formatDuration(result.penguranganGolongan)}
                 </span>
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-3 bg-muted px-3 rounded-lg">
