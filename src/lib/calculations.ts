@@ -47,21 +47,29 @@ function getPenguranganGolongan(
   golonganAwal: Golongan,
   pangkatSaatIni: Golongan
 ): number {
-  if (golonganAwal === "I" && pangkatSaatIni === "II") return 6 * 12;
-  if (golonganAwal === "II" && pangkatSaatIni === "III") return 5 * 12;
-  return 0;
+  let penguranganTahun = 0;
+  const rankAwal = getGolonganRank(golonganAwal);
+  const rankSaatIni = getGolonganRank(pangkatSaatIni);
+
+  if (rankAwal <= 1 && rankSaatIni >= 2) penguranganTahun += 6; // I ke II
+  if (rankAwal <= 2 && rankSaatIni >= 3) penguranganTahun += 5; // II ke III
+
+  return penguranganTahun * 12;
 }
 
 function getPenguranganLabel(
   golonganAwal: Golongan,
   pangkatSaatIni: Golongan
 ): string {
-  if (golonganAwal === "I" && pangkatSaatIni === "II") {
-    return "Pengurangan kenaikan Golongan I ke II (-6 tahun)";
-  }
+  const rankAwal = getGolonganRank(golonganAwal);
+  const rankSaatIni = getGolonganRank(pangkatSaatIni);
 
-  if (golonganAwal === "II" && pangkatSaatIni === "III") {
-    return "Pengurangan kenaikan Golongan II ke III (-5 tahun)";
+  let penguranganTahun = 0;
+  if (rankAwal <= 1 && rankSaatIni >= 2) penguranganTahun += 6;
+  if (rankAwal <= 2 && rankSaatIni >= 3) penguranganTahun += 5;
+
+  if (penguranganTahun > 0) {
+    return `Pengurangan kenaikan Golongan ${golonganAwal} ke ${pangkatSaatIni} (-${penguranganTahun} tahun)`;
   }
 
   return `Pengurangan kenaikan Golongan ${golonganAwal} ke ${pangkatSaatIni} (0 tahun)`;
