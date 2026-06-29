@@ -22,6 +22,13 @@ const changelogEntries = [
       'Menambahkan halaman changelog dan link Changelog di footer.',
     ],
   },
+  {
+    title: 'Peningkatan Logika Pengurangan Golongan',
+    date: '29 Juni 2026',
+    items: [
+      'Menyempurnakan logika pengurangan masa kerja untuk mendukung akumulasi transisi lintas golongan (contoh: Golongan I ke III otomatis dikurangi 11 tahun).',
+    ],
+  },
 ];
 
 export default function ChangelogPage() {
