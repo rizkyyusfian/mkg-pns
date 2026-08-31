@@ -54,7 +54,7 @@ export default function RootLayout({
           <footer className="border-t border-border py-4 text-center text-sm text-muted-foreground">
             <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
               <a
-                href="https://rizkyyusfian.dev"
+                href="https://rizkyyusfian.tech"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
